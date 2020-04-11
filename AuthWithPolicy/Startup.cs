@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using AuthWithPolicy.AuthRequirements;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -28,14 +29,26 @@ namespace AuthWithPolicy
 
             services.AddAuthorization(config =>
             {
-                var defaultAuthBuilder = new AuthorizationPolicyBuilder();
-                var defaultAuthPolicy = defaultAuthBuilder
-                .RequireAuthenticatedUser()
-                .RequireClaim(ClaimTypes.DateOfBirth)
-                .Build();
-                config.DefaultPolicy = defaultAuthPolicy;
+                //var defaultAuthBuilder = new AuthorizationPolicyBuilder();
+                //var defaultAuthPolicy = defaultAuthBuilder
+                //.RequireAuthenticatedUser()
+                //.RequireClaim(ClaimTypes.DateOfBirth)
+                //.Build();
+                //config.DefaultPolicy = defaultAuthPolicy;
 
+                //config.AddPolicy("Claim.Dob", policyBuilder => {
+                //    policyBuilder.RequireClaim(ClaimTypes.DateOfBirth);
+                //});
+
+                //config.AddPolicy("Claim.Dob", policyBuilder => {
+                //    policyBuilder.AddRequirements(new CustomRequireClaim( ClaimTypes.DateOfBirth));
+                //});
+
+                config.AddPolicy("Claim.Dob", policyBuilder => {
+                    policyBuilder.RequireCustomClaim(ClaimTypes.DateOfBirth);
+                });
             });
+            services.AddScoped<IAuthorizationHandler, CustomRequireClaimHandler>();
             services.AddControllersWithViews();
         }
 
@@ -56,6 +69,14 @@ namespace AuthWithPolicy
                 endpoints.MapDefaultControllerRoute();
 
             });
+        }
+    }
+    public static class AuthorizationPolicyBuilderExtension
+    {
+        public static AuthorizationPolicyBuilder RequireCustomClaim(this AuthorizationPolicyBuilder builder, string claimType)
+        {
+            builder.AddRequirements(new CustomRequireClaim(claimType));
+            return builder;
         }
     }
 }

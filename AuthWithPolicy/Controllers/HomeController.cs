@@ -29,7 +29,9 @@ namespace AuthWithPolicy.Controllers
             var ucName = new Claim(ClaimTypes.Name, username);
             var ucEmail = new Claim(ClaimTypes.Email, username);
             var ucPass = new Claim("Password", password);
-            var ci = new ClaimsIdentity(new List<Claim>() { ucName, ucEmail, ucPass},"gmclaimsIdentity");
+            var ucClaim = new Claim(ClaimTypes.DateOfBirth, "01/01/2011");
+            var ucrole = new Claim(ClaimTypes.Role, "Admin");
+            var ci = new ClaimsIdentity(new List<Claim>() { ucName, ucEmail, ucPass, ucClaim, ucrole},"gmclaimsIdentity");
             var cp = new ClaimsPrincipal(new[] { ci });
             await HttpContext.SignInAsync(cp);
             return RedirectToAction(nameof(Secret));
@@ -49,6 +51,20 @@ namespace AuthWithPolicy.Controllers
         {
             return View();
         }
+
+        [Authorize(Policy = "Claim.Dob")]
+        public IActionResult ClaimSecret()
+        {
+            return View(nameof(Secret));
+        }
+
+        [Authorize(Roles = "Admin")]
+        public IActionResult RoleSecret()
+        {
+            return View(nameof(Secret));
+        }
+
+
 
     }
 }
